@@ -11,11 +11,15 @@ use Psr\Http\Message\ResponseInterface;
 class JsonResponse
 {
     /**
+     * @param ResponseInterface $response
+     * @param object|array<mixed>|scalar|null $responseSchema
+     * @return ResponseInterface
      * @throws JsonException
+     * @noinspection PhpPluralMixedCanBeReplacedWithArrayInspection
      */
     public static function of(
         ResponseInterface $response,
-        object $responseSchema,
+        object|array|string|int|float|bool|null $responseSchema,
     ): ResponseInterface
     {
         $psr17Factory = new Psr17Factory();

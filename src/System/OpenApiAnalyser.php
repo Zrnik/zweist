@@ -49,6 +49,14 @@ class OpenApiAnalyser extends Analysis
                 $middleware[] = $middlewareAttribute->middlewareClass;
             }
 
+            /** @var Middleware $middlewareAttribute */
+            foreach (
+                AttributeReflection::getClassAttributes(Middleware::class, $controllerClass)
+                as $middlewareAttribute
+            ) {
+                $middleware[] = $middlewareAttribute->middlewareClass;
+            }
+
             $this->routes[] = [
                 'http_method' => $annotation->method,
                 'url' => $annotation->path,

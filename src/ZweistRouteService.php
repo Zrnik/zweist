@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Zrnik\Zweist;
 
 use JsonException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use RuntimeException;
+use Slim\Routing\Route;
 use Slim\Routing\RouteCollectorProxy;
 
 /**
@@ -13,7 +17,8 @@ use Slim\Routing\RouteCollectorProxy;
  *     http_method: string,
  *     url: string,
  *     controller_class: string,
- *     controller_method: string
+ *     controller_method: string,
+ *     middleware: string[],
  * }
  */
 class ZweistRouteService
@@ -25,7 +30,11 @@ class ZweistRouteService
     }
 
     /**
+     * @param RouteCollectorProxy $routeCollectorProxy
+     * @return void
      * @throws JsonException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function applyRoutes(RouteCollectorProxy $routeCollectorProxy): void
     {
@@ -43,11 +52,21 @@ class ZweistRouteService
         /** @var SlimRouteDataArrayShape[] $routerData */
         $routerData = json_decode($routerJson, true, 512, JSON_THROW_ON_ERROR);
 
-        foreach ($routerData as $route) {
-            $routeCollectorProxy->{strtolower($route['http_method'])}(
-                $route['url'],
-                [$route['controller_class'], $route['controller_method']]
+        foreach ($routerData as $routeSettings) {
+
+            /** @var Route $route */
+            $route = $routeCollectorProxy->{strtolower($routeSettings['http_method'])}(
+                $routeSettings['url'],
+                [$routeSettings['controller_class'], $routeSettings['controller_method']]
             );
+
+            /** @var class-string<MiddlewareInterface> $middlewareClass */
+            foreach ($routeSettings['middleware'] as $middlewareClass) {
+                /** @var MiddlewareInterface $middleware */
+                $middleware = $this->zweistConfiguration->container->get($middlewareClass);
+
+                $route->addMiddleware($middleware);
+            }
         }
     }
 }

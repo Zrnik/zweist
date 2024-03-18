@@ -7,7 +7,9 @@ namespace Zrnik\Zweist\System;
 use JsonException;
 use OpenApi\Analysis;
 use OpenApi\Annotations\Operation;
+use OpenApi\Attributes\Middleware;
 use OpenApi\Context;
+use Zrnik\AttributeReflection\AttributeReflection;
 use Zrnik\Zweist\ZweistRouteService;
 
 /**
@@ -27,15 +29,32 @@ class OpenApiAnalyser extends Analysis
     public function addAnnotation(object $annotation, Context $context): void
     {
         if ($annotation instanceof Operation) {
+
+            /** @var class-string $controllerClass */
+            $controllerClass = sprintf(
+                '%s\%s',
+                $context->namespace,
+                $context->class
+            );
+
+            $method = (string) $context->method;
+
+            $middleware = [];
+
+            /** @var Middleware $middlewareAttribute */
+            foreach (
+                AttributeReflection::getMethodAttributes(Middleware::class, $controllerClass, $method)
+                as $middlewareAttribute
+            ) {
+                $middleware[] = $middlewareAttribute->middlewareClass;
+            }
+
             $this->routes[] = [
                 'http_method' => $annotation->method,
                 'url' => $annotation->path,
-                'controller_class' => sprintf(
-                    '%s\%s',
-                    $context->namespace,
-                    $context->class
-                ),
-                'controller_method' => (string) $context->method,
+                'controller_class' => $controllerClass,
+                'controller_method' => $method,
+                'middleware' => $middleware,
             ];
         }
 

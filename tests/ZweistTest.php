@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Zrnik\Zweist\Tests;
 
+use DI\Container;
 use JsonException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use RuntimeException;
 use Slim\App;
 use Zrnik\Zweist\Exception\MisconfiguredOpenApiGeneratorException;
@@ -18,12 +20,16 @@ class ZweistTest extends TestCase
 {
     private ZweistConfiguration $zweistConfiguration;
 
+    private ContainerInterface $container;
+
     protected function setUp(): void
     {
+        $this->container = new Container();
         $this->zweistConfiguration = new ZweistConfiguration(
             [__DIR__ . '/ExampleApplication'],
             __DIR__ . '/../temp/OpenApi.json',
             __DIR__ . '/../temp/router.json',
+            $this->container,
         );
     }
 
@@ -41,14 +47,14 @@ class ZweistTest extends TestCase
         }
 
         self::assertFileDoesNotExist($this->zweistConfiguration->openApiJsonPath);
-        self::assertFileDoesNotExist($this->zweistConfiguration->openApiJsonPath);
+        self::assertFileDoesNotExist($this->zweistConfiguration->routerJsonPath);
 
         $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration);
 
         $zweistOpenApiGenerator->generate();
 
         self::assertFileExists($this->zweistConfiguration->openApiJsonPath);
-        self::assertFileExists($this->zweistConfiguration->openApiJsonPath);
+        self::assertFileExists($this->zweistConfiguration->routerJsonPath);
 
         $psr17Factory = new Psr17Factory();
 
@@ -101,7 +107,7 @@ class ZweistTest extends TestCase
     public function testConfigException(): void
     {
         $this->expectException(MisconfiguredOpenApiGeneratorException::class);
-        new ZweistConfiguration([], '', '');
+        new ZweistConfiguration([], '', '', $this->container);
     }
 
     /**
@@ -110,7 +116,12 @@ class ZweistTest extends TestCase
     public function testFileNotFoundException(): void
     {
         $this->expectException(RuntimeException::class);
-        $zweistConfiguration = new ZweistConfiguration([''], '', 'non-existent.json');
+        $zweistConfiguration = new ZweistConfiguration(
+            [''],
+            '',
+            'non-existent.json',
+            $this->container
+        );
         $zweistRouteService = new ZweistRouteService($zweistConfiguration);
         $zweistRouteService->applyRoutes(new App(new Psr17Factory()));
     }

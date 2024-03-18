@@ -11,7 +11,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "Zrnik\\Zweist\\": "src"
+            "Zrnik\\Zweist\\": "src",
+            "OpenApi\\Attributes\\": "openapi"
         }
     },
     "autoload-dev": {
@@ -24,12 +25,14 @@
         "zircote/swagger-php": "^4",
         "slim/slim": "^4",
         "nyholm/psr7": "^1.8",
-        "eventsauce/object-hydrator": "^1.4"
+        "eventsauce/object-hydrator": "^1.4",
+        "zrnik/php-attribute-reflection": "^0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
         "phpstan/phpstan": "^1",
         "symplify/easy-coding-standard": "^12",
-        "phpunit/phpunit": "^10"
+        "phpunit/phpunit": "^10",
+        "php-di/php-di": "^7"
     }
 }

@@ -7,10 +7,12 @@ namespace Zrnik\Zweist\Tests\ExampleApplication\Controllers;
 use JsonException;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Middleware;
 use OpenApi\Attributes\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zrnik\Zweist\Content\JsonResponse;
+use Zrnik\Zweist\Tests\ExampleApplication\ExampleMiddleware;
 
 class HelloWorldController
 {
@@ -30,7 +32,8 @@ class HelloWorldController
             content: new JsonContent(ref: TestResponse::class)
         )
     ]
-    public function sayGoodbye(
+    #[Middleware(ExampleMiddleware::class)]
+    public function sayHello(
         RequestInterface $request,
         ResponseInterface $response,
         array $arguments = []

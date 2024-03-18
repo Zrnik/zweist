@@ -1,0 +1,13 @@
+on: [push, release, pull_request]
+
+jobs:
+    hello_world_job:
+        runs-on: ubuntu-latest
+        name: Standards & Testing
+        steps:
+            - uses: actions/checkout@v4
+            - run: make build
+            - run: make composer-install
+            - run: make ecs
+            - run: make phpstan
+            - run: make phpunit

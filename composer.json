@@ -1,0 +1,35 @@
+{
+    "name": "zrnik/zweist",
+    "description": "OpenAPI routing for Slim Framework 4 with `zircote/swagger-php`",
+    "minimum-stability": "stable",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Štěpán Zrník",
+            "email": "stepan.zrnik@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Zrnik\\Zweist\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Zrnik\\Zweist\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "php": ">=8.1.0",
+        "zircote/swagger-php": "^4",
+        "slim/slim": "^4",
+        "nyholm/psr7": "^1.8",
+        "eventsauce/object-hydrator": "^1.4"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest",
+        "phpstan/phpstan": "^1",
+        "symplify/easy-coding-standard": "^12",
+        "phpunit/phpunit": "^10"
+    }
+}

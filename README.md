@@ -33,9 +33,9 @@ class HelloWorldController
             response: 200,
             description: 'when ok',
             content: new JsonContent(ref: TestResponse::class)
-        )
+        ),
+        Middleware(ExampleMiddleware::class)
     ]
-    #[Middleware(ExampleMiddleware::class)]
     public function sayHello(
         RequestInterface $request,
         ResponseInterface $response,
@@ -87,4 +87,18 @@ $zweistRouteService = new ZweistRouteService($zweistConfiguration);
 $zweistRouteService->applyRoutes($app);
 ```
 
+## More things you should know
+
+You will need to create a class with `openapi` 
+description attributes.
+(see [./tests/ExampleApplication/ExampleApplicationInfo.php](./tests/ExampleApplication/ExampleApplicationInfo.php))
+
+You want to **generate** `openapi.json` and `router.json` locally when developing,
+and then committing them with your code, because you do not want to scan all the files
+for the router at runtime for every request. 
+
+You should check on the CI that you didn't forget to generate new files.
+
+Classes `ZweistOpenApiGenerator`, `ZweistRouteService` and `ZweistConfiguration`
+should be configured to be delivered by DI container.
 

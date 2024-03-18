@@ -7,6 +7,10 @@ namespace Zrnik\Zweist;
 use JsonException;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Generator;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 use UnexpectedValueException;
 use Zrnik\Zweist\System\OpenApiAnalyser;
 
@@ -14,12 +18,16 @@ class ZweistOpenApiGenerator
 {
     public function __construct(
         private readonly ZweistConfiguration $zweistConfiguration,
+        private readonly ContainerInterface $container,
     )
     {
     }
 
     /**
+     * @return void
      * @throws JsonException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function generate(): void
     {
@@ -29,7 +37,7 @@ class ZweistOpenApiGenerator
             $this->zweistConfiguration->openApiDefinitionPaths,
             [
                 'analysis' => $openApiAnalyser,
-                'logger' => $this->zweistConfiguration->logger,
+                'logger' => $this->container->get(LoggerInterface::class),
             ],
         );
 

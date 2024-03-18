@@ -17,8 +17,8 @@ use Zrnik\Zweist\Tests\ExampleApplication\ExampleMiddleware;
 class HelloWorldController
 {
     /**
-     * @throws JsonException
      * @param array<string, string> $arguments
+     * @throws JsonException
      */
     #[
         Get(
@@ -30,9 +30,9 @@ class HelloWorldController
             response: 200,
             description: 'when ok',
             content: new JsonContent(ref: TestResponse::class)
-        )
+        ),
+        Middleware(ExampleMiddleware::class),
     ]
-    #[Middleware(ExampleMiddleware::class)]
     public function sayHello(
         RequestInterface $request,
         ResponseInterface $response,

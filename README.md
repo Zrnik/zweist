@@ -20,8 +20,8 @@ composer require zrnik/zweist
 class HelloWorldController
 {
     /**
-     * @throws JsonException
      * @param array<string, string> $arguments
+     * @throws JsonException
      */
     #[
         Get(
@@ -34,7 +34,7 @@ class HelloWorldController
             description: 'when ok',
             content: new JsonContent(ref: TestResponse::class)
         ),
-        Middleware(ExampleMiddleware::class)
+        Middleware(ExampleMiddleware::class),
     ]
     public function sayHello(
         RequestInterface $request,
@@ -55,7 +55,7 @@ class HelloWorldController
 }
 ```
 
-#### 2. Generate (and commit) `openapi.json` & `router.json`
+#### 2. Add `ZweistConfiguration` to your DI.
 
 ```php
 $zweistConfiguration = new ZweistConfiguration(
@@ -69,36 +69,31 @@ $zweistConfiguration = new ZweistConfiguration(
     // generated (and committed) files
     __DIR__ . '/openapi.json', 
     __DIR__ .'/router.json', 
-    
-    // PSR-11 DI ContainerInterface (to get middleware instances)
-    $container,
 );
+```
 
-$zweistOpenApiGenerator = new ZweistOpenApiGenerator($zweistConfiguration);
+#### 3. Generate (and commit) `openapi.json` & `router.json`
 
+```php
+$zweistOpenApiGenerator = $container->get(ZweistOpenApiGenerator::class);
 $zweistOpenApiGenerator->generate();
 ```
 
-#### 3. Let `ZweistRouteService` populate routes in the `\Slim\App` instance.
+#### 4. Let `ZweistRouteService` populate routes in the `\Slim\App` instance.
 
 ```php
-$zweistRouteService = new ZweistRouteService($zweistConfiguration);
-
+$zweistRouteService = $container->get(ZweistRouteService::class);
 $zweistRouteService->applyRoutes($app);
 ```
 
 ## More things you should know
 
-You will need to create a class with `openapi` 
+You will need to create a class with `openapi`
 description attributes.
 (see [./tests/ExampleApplication/ExampleApplicationInfo.php](./tests/ExampleApplication/ExampleApplicationInfo.php))
 
 You want to **generate** `openapi.json` and `router.json` locally when developing,
 and then committing them with your code, because you do not want to scan all the files
-for the router at runtime for every request. 
+for the router at runtime for every request.
 
 You should check on the CI that you didn't forget to generate new files.
-
-Classes `ZweistOpenApiGenerator`, `ZweistRouteService` and `ZweistConfiguration`
-should be configured to be delivered by DI container.
-

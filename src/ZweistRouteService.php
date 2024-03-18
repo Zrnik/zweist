@@ -6,6 +6,7 @@ namespace Zrnik\Zweist;
 
 use JsonException;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use RuntimeException;
@@ -24,7 +25,8 @@ use Slim\Routing\RouteCollectorProxy;
 class ZweistRouteService
 {
     public function __construct(
-        private readonly ZweistConfiguration $zweistConfiguration
+        private readonly ZweistConfiguration $zweistConfiguration,
+        private readonly ContainerInterface $container,
     )
     {
     }
@@ -63,7 +65,7 @@ class ZweistRouteService
             /** @var class-string<MiddlewareInterface> $middlewareClass */
             foreach ($routeSettings['middleware'] as $middlewareClass) {
                 /** @var MiddlewareInterface $middleware */
-                $middleware = $this->zweistConfiguration->container->get($middlewareClass);
+                $middleware = $this->container->get($middlewareClass);
 
                 $route->addMiddleware($middleware);
             }

@@ -12,8 +12,10 @@ use OpenApi\Attributes\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zrnik\Zweist\Content\JsonResponse;
+use Zrnik\Zweist\Tests\ExampleApplication\ExampleClassMiddleware;
 use Zrnik\Zweist\Tests\ExampleApplication\ExampleMiddleware;
 
+#[Middleware(ExampleClassMiddleware::class)]
 class HelloWorldController
 {
     /**

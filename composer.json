@@ -33,6 +33,8 @@
         "phpstan/phpstan": "^1",
         "symplify/easy-coding-standard": "^12",
         "phpunit/phpunit": "^10",
-        "php-di/php-di": "^7"
+        "php-di/php-di": "^7",
+        "zrnik/phpunit-exceptions": "^0.1",
+        "tracy/tracy": "^2"
     }
 }

@@ -45,8 +45,7 @@ class GoodByeController
             GoodByeRequestParameters::class,
         );
 
-        return JsonResponse::of(
-            $response,
+        return JsonResponse::new(
             new TestResponse(
                 sprintf(
                     '%s, %s :(',

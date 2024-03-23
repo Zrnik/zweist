@@ -59,6 +59,8 @@ class SchemaTest extends TestCase
             ExpectationFailedException::class,
             fn() => $this->assertSchemaReturnsCorrectJson(new SchemaWithWrongIntersection())
         );
+
+        $this->assertIsNotSchemaObject(new NotASchemaClass());
     }
 
     public function testRecursivePropertyFails(): void
@@ -89,6 +91,16 @@ class SchemaTest extends TestCase
         $expectationFailedException = $this->assertExceptionThrown(
             ExpectationFailedException::class,
             fn() => $this->assertIsSchemaObject(new NotASchemaClass(), 'test-message')
+        );
+
+        self::assertSame(
+            'test-message',
+            $expectationFailedException->getMessage(),
+        );
+
+        $expectationFailedException = $this->assertExceptionThrown(
+            ExpectationFailedException::class,
+            fn() => $this->assertIsNotSchemaObject(new SchemaClass(), 'test-message')
         );
 
         self::assertSame(

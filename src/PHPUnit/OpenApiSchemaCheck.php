@@ -144,6 +144,22 @@ trait OpenApiSchemaCheck
         }
     }
 
+    private function assertIsNotSchemaObject(object $noSchemaObject, ?string $message = null): void
+    {
+        if ($this->isSchemaClass($noSchemaObject)) {
+            throw new ExpectationFailedException(
+                $message
+                ??
+                sprintf(
+                    'Expected non-schema class, but got "%s".',
+                    get_debug_type($noSchemaObject),
+                )
+            );
+        }
+
+        $this->addToAssertionCount(1);
+    }
+
     public function assertIsSchemaObject(object $schemaObject, ?string $message = null): void
     {
         $schemaAttributes = AttributeReflection::getClassAttributes(Schema::class, $schemaObject);

@@ -39,7 +39,14 @@ class SchemaTest extends TestCase
         $this->assertSchemaReturnsCorrectJson(new UnrelatedSchemaClass());
 
         $failingSchema = new SchemaClass();
-        $failingSchema->returnOk = false;
+        $failingSchema->invalidSchemaKey = 'unrelatedSchema';
+
+        $this->assertExceptionThrown(
+            ExpectationFailedException::class,
+            fn() => $this->assertSchemaReturnsCorrectJson($failingSchema)
+        );
+
+        $failingSchema->invalidSchemaKey = 'unrelatedNonSchemaClass';
 
         $this->assertExceptionThrown(
             ExpectationFailedException::class,

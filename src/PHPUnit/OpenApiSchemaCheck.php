@@ -148,6 +148,8 @@ trait OpenApiSchemaCheck
 
     private function assertIsNotSchemaObject(object $noSchemaObject, ?string $message = null): void
     {
+        $this->addToAssertionCount(1);
+
         if ($this->isSchemaClass($noSchemaObject)) {
             throw new ExpectationFailedException(
                 $message
@@ -158,16 +160,14 @@ trait OpenApiSchemaCheck
                 )
             );
         }
-
-        $this->addToAssertionCount(1);
     }
 
     public function assertIsSchemaObject(object $schemaObject, ?string $message = null): void
     {
         $schemaAttributes = AttributeReflection::getClassAttributes(Schema::class, $schemaObject);
+        $this->addToAssertionCount(1);
 
         if (count($schemaAttributes) > 0) {
-            $this->addToAssertionCount(1);
             return; // Ok
         }
 

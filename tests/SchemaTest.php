@@ -62,12 +62,4 @@ class SchemaTest extends TestCase
             fn() => $this->assertSchemaReturnsCorrectJson(new SchemaWithWrongIntersection())
         );
     }
-
-    public function objectExists(string $className): bool
-    {
-        return class_exists($className)
-            || interface_exists($className)
-            || trait_exists($className)
-            || enum_exists($className);
-    }
 }

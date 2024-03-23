@@ -181,4 +181,12 @@ trait OpenApiSchemaCheck
 
         return count($classAttributes) !== 0;
     }
+
+    public function objectExists(string $className): bool
+    {
+        return class_exists($className)
+            || interface_exists($className)
+            || trait_exists($className)
+            || enum_exists($className);
+    }
 }

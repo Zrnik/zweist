@@ -21,9 +21,9 @@ trait OpenApiSchemaCheck
 {
     abstract protected function addToAssertionCount(int $howMuch);
 
-    public function assertSchemaReturnsCorrectJson(object $schemaObject): void
+    public function assertSchemaReturnsCorrectJson(object $schemaObject, ?string $message = null): void
     {
-        $this->assertIsSchemaObject($schemaObject);
+        $this->assertIsSchemaObject($schemaObject, $message);
 
         try {
             if ($schemaObject instanceof JsonSerializable) {
@@ -34,6 +34,8 @@ trait OpenApiSchemaCheck
             }
         } catch (JsonException $jsonException) {
             throw new ExpectationFailedException(
+                $message
+                ??
                 sprintf(
                     'Schema class "%s" threw an exception while JSON serializing. Message: %s',
                     get_debug_type($schemaObject),
@@ -47,7 +49,7 @@ trait OpenApiSchemaCheck
         $reflectionClass = new ReflectionClass($schemaObject);
         foreach ($reflectionClass->getProperties() as $reflectionProperty) {
 
-            if (!$this->isSchemaProperty($schemaObject, $reflectionProperty)) {
+            if (! $this->isSchemaProperty($schemaObject, $reflectionProperty)) {
                 continue;
             }
 
@@ -125,20 +127,24 @@ trait OpenApiSchemaCheck
                 }
             }
 
-            if (!$found) {
-                throw new ExpectationFailedException(sprintf(
-                    'Schema class "%s" expected to jsonSerialize "%s" property as %s of ["%s"] types, but returned "%s".',
-                    get_debug_type($schemaObject),
-                    $reflectionProperty->getName(),
-                    $mustBeAllAtOnce ? 'all' : 'one',
-                    implode('", "', $types),
-                    get_debug_type($value),
-                ));
+            if (! $found) {
+                throw new ExpectationFailedException(
+                    $message
+                    ??
+                    sprintf(
+                        'Schema class "%s" expected to jsonSerialize "%s" property as %s of ["%s"] types, but returned "%s".',
+                        get_debug_type($schemaObject),
+                        $reflectionProperty->getName(),
+                        $mustBeAllAtOnce ? 'all' : 'one',
+                        implode('", "', $types),
+                        get_debug_type($value),
+                    )
+                );
             }
         }
     }
 
-    public function assertIsSchemaObject(object $schemaObject): void
+    public function assertIsSchemaObject(object $schemaObject, ?string $message = null): void
     {
         $schemaAttributes = AttributeReflection::getClassAttributes(Schema::class, $schemaObject);
 
@@ -147,10 +153,14 @@ trait OpenApiSchemaCheck
             return; // Ok
         }
 
-        throw new ExpectationFailedException(sprintf(
-            'No schema attribute found on class "%s".',
-            get_debug_type($schemaObject),
-        ));
+        throw new ExpectationFailedException(
+            $message
+            ??
+            sprintf(
+                'No schema attribute found on class "%s".',
+                get_debug_type($schemaObject),
+            )
+        );
     }
 
     public function getPropertyAttribute(object $schemaObject, ReflectionProperty $reflectionProperty): Property

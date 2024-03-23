@@ -73,4 +73,27 @@ class SchemaTest extends TestCase
             $expectationFailedException->getPrevious(),
         );
     }
+
+    public function testMessageReturned(): void
+    {
+        $expectationFailedException = $this->assertExceptionThrown(
+            ExpectationFailedException::class,
+            fn() => $this->assertSchemaReturnsCorrectJson(new SchemaWithRecursiveProperty(), 'test-message')
+        );
+
+        self::assertSame(
+            'test-message',
+            $expectationFailedException->getMessage(),
+        );
+
+        $expectationFailedException = $this->assertExceptionThrown(
+            ExpectationFailedException::class,
+            fn() => $this->assertIsSchemaObject(new NotASchemaClass(), 'test-message')
+        );
+
+        self::assertSame(
+            'test-message',
+            $expectationFailedException->getMessage(),
+        );
+    }
 }

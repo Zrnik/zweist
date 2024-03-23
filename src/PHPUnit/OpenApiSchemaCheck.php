@@ -21,8 +21,6 @@ trait OpenApiSchemaCheck
 {
     abstract protected function addToAssertionCount(int $howMuch);
 
-    abstract protected static function assertTrue(mixed $condition, string $message = ''): void;
-
     public function assertSchemaReturnsCorrectJson(object $schemaObject): void
     {
         $this->assertIsSchemaObject($schemaObject);
@@ -49,7 +47,7 @@ trait OpenApiSchemaCheck
         $reflectionClass = new ReflectionClass($schemaObject);
         foreach ($reflectionClass->getProperties() as $reflectionProperty) {
 
-            if (! $this->isSchemaProperty($schemaObject, $reflectionProperty)) {
+            if (!$this->isSchemaProperty($schemaObject, $reflectionProperty)) {
                 continue;
             }
 
@@ -111,7 +109,7 @@ trait OpenApiSchemaCheck
             $found = false;
 
             foreach ($types as $type) {
-                if ($this->objectExists($type) && ($value instanceof $type)) {
+                if (($value instanceof $type) && $this->objectExists($type)) {
                     $found = true;
                     continue;
                 }
@@ -127,7 +125,7 @@ trait OpenApiSchemaCheck
                 }
             }
 
-            if (! $found) {
+            if (!$found) {
                 throw new ExpectationFailedException(sprintf(
                     'Schema class "%s" expected to jsonSerialize "%s" property as %s of ["%s"] types, but returned "%s".',
                     get_debug_type($schemaObject),

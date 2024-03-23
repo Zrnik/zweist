@@ -116,7 +116,10 @@ trait OpenApiSchemaCheck
                     continue;
                 }
 
-                if ($type === get_debug_type($value)) {
+                if (
+                    $type === get_debug_type($value)
+                    || ($type === 'number' && (get_debug_type($value) === 'integer' || get_debug_type($value) === 'float'))
+                ) {
                     $found = true;
                     continue;
                 }

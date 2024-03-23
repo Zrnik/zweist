@@ -31,6 +31,8 @@ class SchemaClass implements JsonSerializable
         public readonly NotASchemaClass $nonSchema = new NotASchemaClass(),
         #[Property(type: ['string', 'int'])]
         public readonly string $doubleForcedType = 'double-forced-type',
+        #[Property(type: ['number'])]
+        public readonly float $floatNumber = 0.33,
     )
     {
     }
@@ -48,6 +50,7 @@ class SchemaClass implements JsonSerializable
             'unrelatedNonSchemaClass' => new NotASchemaClass(),
             'nonSchema' => $this->nonSchema,
             'doubleForcedType' => $this->doubleForcedType,
+            'floatNumber' => $this->floatNumber,
         ];
 
         $invalidReturnValues = [

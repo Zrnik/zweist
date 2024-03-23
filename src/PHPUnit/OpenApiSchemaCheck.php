@@ -23,18 +23,27 @@ trait OpenApiSchemaCheck
 
     abstract protected static function assertTrue(mixed $condition, string $message = ''): void;
 
-    /**
-     * @throws JsonException
-     */
     public function assertSchemaReturnsCorrectJson(object $schemaObject): void
     {
         $this->assertIsSchemaObject($schemaObject);
 
-        if ($schemaObject instanceof JsonSerializable) {
-            $jsonArray = $schemaObject->jsonSerialize();
-        } else {
-            $jsonString = json_encode($schemaObject, JSON_THROW_ON_ERROR);
-            $jsonArray = json_decode($jsonString, true, 512, JSON_THROW_ON_ERROR);
+        try {
+            if ($schemaObject instanceof JsonSerializable) {
+                $jsonArray = $schemaObject->jsonSerialize();
+            } else {
+                $jsonString = json_encode($schemaObject, JSON_THROW_ON_ERROR);
+                $jsonArray = json_decode($jsonString, true, 512, JSON_THROW_ON_ERROR);
+            }
+        } catch (JsonException $jsonException) {
+            throw new ExpectationFailedException(
+                sprintf(
+                    'Schema class "%s" threw an exception while JSON serializing. Message: %s',
+                    get_debug_type($schemaObject),
+                    $jsonException->getMessage()
+                ),
+                null,
+                $jsonException
+            );
         }
 
         $reflectionClass = new ReflectionClass($schemaObject);

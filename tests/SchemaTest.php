@@ -13,6 +13,7 @@ use Zrnik\Zweist\Tests\ExampleSchema\Helpers\StreamFactory;
 use Zrnik\Zweist\Tests\ExampleSchema\NotASchemaClass;
 use Zrnik\Zweist\Tests\ExampleSchema\SchemaClass;
 use Zrnik\Zweist\Tests\ExampleSchema\SchemaWithIntersection;
+use Zrnik\Zweist\Tests\ExampleSchema\SchemaWithRecursiveProperty;
 use Zrnik\Zweist\Tests\ExampleSchema\SchemaWithWrongIntersection;
 use Zrnik\Zweist\Tests\ExampleSchema\UnrelatedSchemaClass;
 
@@ -29,9 +30,6 @@ class SchemaTest extends TestCase
         );
     }
 
-    /**
-     * @throws JsonException
-     */
     public function testSchemaCheck(): void
     {
         $this->assertIsSchemaObject(new SchemaClass());
@@ -60,6 +58,19 @@ class SchemaTest extends TestCase
         $this->assertExceptionThrown(
             ExpectationFailedException::class,
             fn() => $this->assertSchemaReturnsCorrectJson(new SchemaWithWrongIntersection())
+        );
+    }
+
+    public function testRecursivePropertyFails(): void
+    {
+        $expectationFailedException = $this->assertExceptionThrown(
+            ExpectationFailedException::class,
+            fn() => $this->assertSchemaReturnsCorrectJson(new SchemaWithRecursiveProperty())
+        );
+
+        self::assertInstanceOf(
+            JsonException::class,
+            $expectationFailedException->getPrevious(),
         );
     }
 }

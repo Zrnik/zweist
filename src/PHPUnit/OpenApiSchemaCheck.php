@@ -141,6 +141,8 @@ trait OpenApiSchemaCheck
                     )
                 );
             }
+
+            $this->addToAssertionCount(1);
         }
     }
 

@@ -5,17 +5,27 @@ declare(strict_types=1);
 namespace Zrnik\Zweist\Tests\ExampleApplication\Controllers;
 
 use JsonException;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zrnik\Zweist\Content\JsonRequest;
-use Zrnik\Zweist\Content\JsonResponse;
+use Zrnik\Zweist\Content\JsonContentFacade;
 
 class GoodByeController
 {
+    private JsonContentFacade $jsonContentFacade;
+
+    public function __construct()
+    {
+        $this->jsonContentFacade = new JsonContentFacade(
+            new Psr17Factory(),
+            new Psr17Factory(),
+        );
+    }
+
     /**
      * @throws JsonException
      */
@@ -40,12 +50,12 @@ class GoodByeController
     ): ResponseInterface
     {
         /** @var GoodByeRequestParameters $goodByeRequestParameters */
-        $goodByeRequestParameters = JsonRequest::of(
+        $goodByeRequestParameters = $this->jsonContentFacade->parseRequest(
             $request,
             GoodByeRequestParameters::class,
         );
 
-        return JsonResponse::new(
+        return $this->jsonContentFacade->createResponse(
             new TestResponse(
                 sprintf(
                     '%s, %s :(',

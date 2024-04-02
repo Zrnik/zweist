@@ -5,19 +5,30 @@ declare(strict_types=1);
 namespace Zrnik\Zweist\Tests\ExampleApplication\Controllers;
 
 use JsonException;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Middleware;
 use OpenApi\Attributes\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zrnik\Zweist\Content\JsonResponse;
+use Zrnik\Zweist\Content\JsonContentFacade;
 use Zrnik\Zweist\Tests\ExampleApplication\ExampleClassMiddleware;
 use Zrnik\Zweist\Tests\ExampleApplication\ExampleMiddleware;
 
 #[Middleware(ExampleClassMiddleware::class)]
 class HelloWorldController
 {
+    private JsonContentFacade $jsonContentFacade;
+
+    public function __construct()
+    {
+        $this->jsonContentFacade = new JsonContentFacade(
+            new Psr17Factory(),
+            new Psr17Factory(),
+        );
+    }
+
     /**
      * @param array<string, string> $arguments
      * @throws JsonException
@@ -41,7 +52,7 @@ class HelloWorldController
         array $arguments = []
     ): ResponseInterface
     {
-        return JsonResponse::of(
+        return $this->jsonContentFacade->updateResponse(
             $response,
             new TestResponse(
                 sprintf(

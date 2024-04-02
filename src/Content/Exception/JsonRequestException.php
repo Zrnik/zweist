@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Zrnik\Zweist\Content\Exception;
 
 use EventSauce\ObjectHydrator\UnableToHydrateObject;
+use JsonException;
 use Throwable;
 use TypeError;
 
@@ -57,15 +58,44 @@ class JsonRequestException extends JsonContentException
         );
     }
 
+    public static function fromJsonException(JsonException $jsonException): self
+    {
+        $supportedJsonErrors = [
+            'Syntax error' => 'Value provided is not a valid JSON.',
+        ];
+
+        $supportedMessage = $supportedJsonErrors[$jsonException->getMessage()] ?? null;
+
+        if ($supportedMessage !== null) {
+            return new self($supportedMessage, [], $jsonException);
+        }
+
+        return new self('Unknown error', [], $jsonException); // @codeCoverageIgnore
+    }
+
     /**
      * @param Throwable $throwable
      * @return self
      * @codeCoverageIgnore
      */
-    public static function unhandled(Throwable $throwable): self
+    public static function unhandledThrowable(Throwable $throwable): self
     {
         return new self(
             sprintf('Unhandled "%s" exception, see previous!', get_debug_type($throwable)),
+            [],
+            $throwable,
+        );
+    }
+
+    /**
+     * @param UnableToHydrateObject $throwable
+     * @return self
+     * @codeCoverageIgnore
+     */
+    public static function unhandledObjectHydrate(UnableToHydrateObject $throwable): self
+    {
+        return new self(
+            sprintf('Unhandled "%s" exception, while hydrating!', get_debug_type($throwable)),
             [],
             $throwable,
         );

@@ -63,9 +63,11 @@ class JsonContentFacade
                 throw JsonRequestException::fromJsonTypeError($previous);
             }
 
-            throw JsonRequestException::unhandled($unableToHydrateObject); // @codeCoverageIgnore
+            throw JsonRequestException::unhandledObjectHydrate($unableToHydrateObject); // @codeCoverageIgnore
+        } catch (JsonException $jsonException) {
+            throw JsonRequestException::fromJsonException($jsonException);
         } catch (Throwable $throwable) { // @codeCoverageIgnoreStart
-            throw JsonRequestException::unhandled($throwable);
+            throw JsonRequestException::unhandledThrowable($throwable);
         } // @codeCoverageIgnoreEnd
     }
 

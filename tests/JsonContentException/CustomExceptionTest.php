@@ -153,6 +153,23 @@ class CustomExceptionTest extends TestCase
         );
     }
 
+    public function testEmptyResponse(): void
+    {
+        /** @var JsonRequestException $exception */
+        $exception = $this->assertExceptionThrown(
+            JsonRequestException::class,
+            fn() => $this->jsonContentFacade->parseRequest(
+                self::createRequestWithJsonBody([])->withBody((new Psr17Factory())->createStream()),
+                ExampleSchemaToHydrate::class,
+            )
+        );
+
+        assertSame(
+            'Value provided is not a valid JSON.',
+            $exception->getMessage(),
+        );
+    }
+
     public function testResponseErrorThrownOnRecursion(): void
     {
         $recurseObject = new stdClass();

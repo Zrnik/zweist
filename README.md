@@ -19,6 +19,10 @@ composer require zrnik/zweist
 ```php
 class HelloWorldController
 {
+    public function __construct(
+        private readonly \Zrnik\Zweist\Content\JsonContentFacade $jsonContentFacade,
+    ) {}
+
     /**
      * @param array<string, string> $arguments
      * @throws JsonException
@@ -42,7 +46,7 @@ class HelloWorldController
         array $arguments = []
     ): ResponseInterface
     {
-        return JsonResponse::of(
+        return $this->jsonContentFacade->updateResponse(
             $response,
             new TestResponse(
                 sprintf(

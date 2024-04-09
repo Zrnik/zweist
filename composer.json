@@ -26,7 +26,8 @@
         "slim/slim": "^4",
         "nyholm/psr7": "^1.8",
         "eventsauce/object-hydrator": "^1.4",
-        "zrnik/php-attribute-reflection": "^0"
+        "zrnik/php-attribute-reflection": "^0",
+        "nette/utils": "^3||^4"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

@@ -16,6 +16,7 @@ use TypeError;
 use Zrnik\Zweist\Content\Exception\JsonContentException;
 use Zrnik\Zweist\Content\Exception\JsonRequestException;
 use Zrnik\Zweist\Content\Exception\JsonResponseException;
+use Zrnik\Zweist\Content\Pagination\PaginationData;
 
 class JsonContentFacade
 {
@@ -107,5 +108,56 @@ class JsonContentFacade
     ): ResponseInterface
     {
         return $this->updateResponse($this->responseFactory->createResponse(), $responseSchema, $statusCode);
+    }
+
+    /**
+     * You must provide already paginated items!
+     *
+     * @param array<object|array<mixed>|scalar|null> $filteredItems
+     * @throws JsonContentException
+     * @noinspection PhpPluralMixedCanBeReplacedWithArrayInspection
+     */
+    public function createPaginatedResponse(
+        int $page,
+        int $itemsPerPage,
+        int $itemCount,
+        array $filteredItems,
+        int $statusCode = 200,
+    ): ResponseInterface
+    {
+        return $this->updatePaginatedResponse(
+            $this->responseFactory->createResponse(),
+            $page,
+            $itemsPerPage,
+            $itemCount,
+            $filteredItems,
+            $statusCode,
+        );
+    }
+
+    /**
+     * You must provide already paginated items!
+     *
+     * @param array<object|array<mixed>|scalar|null> $filteredItems
+     * @throws JsonContentException
+     * @noinspection PhpPluralMixedCanBeReplacedWithArrayInspection
+     */
+    public function updatePaginatedResponse(
+        ResponseInterface $response,
+        int $page,
+        int $itemsPerPage,
+        int $itemCount,
+        array $filteredItems,
+        int $statusCode = 200,
+    ): ResponseInterface
+    {
+        return $this->updateResponse(
+            $this->responseFactory->createResponse(),
+            [
+                'pagination' => new PaginationData($page, $itemsPerPage, $itemCount),
+                'data' => $filteredItems,
+            ],
+            $statusCode
+        );
     }
 }

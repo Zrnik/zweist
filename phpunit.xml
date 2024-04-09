@@ -8,6 +8,7 @@
     <source>
         <include>
             <directory>src</directory>
+            <directory>openapi</directory>
         </include>
     </source>
     <testsuites>

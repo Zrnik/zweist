@@ -1,7 +1,8 @@
 <?php
 
-namespace OpenApi\Attributes;
+declare(strict_types=1);
 
+namespace OpenApi\Attributes;
 
 use Attribute;
 use Psr\Http\Server\MiddlewareInterface;
@@ -12,7 +13,9 @@ class Middleware
     /**
      * @param class-string<MiddlewareInterface> $middlewareClass
      */
-    public function __construct(public readonly string $middlewareClass)
+    public function __construct(
+        public readonly string $middlewareClass
+    )
     {
     }
 }

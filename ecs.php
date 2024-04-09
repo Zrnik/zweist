@@ -11,6 +11,7 @@ use Symplify\EasyCodingStandard\Config\ECSConfig;
 return ECSConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
+        __DIR__ . '/openapi',
         __DIR__ . '/tests',
         __DIR__ . '/ecs.php',
     ])

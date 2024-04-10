@@ -9,7 +9,9 @@ use OpenApi\Analysis;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes\Middleware;
 use OpenApi\Context;
+use Override;
 use Zrnik\AttributeReflection\AttributeReflection;
+use Zrnik\Zweist\ZweistConfiguration;
 use Zrnik\Zweist\ZweistRouteService;
 
 /**
@@ -20,16 +22,17 @@ class OpenApiAnalyser extends Analysis
     /** @phpstan-var SlimRouteDataArrayShape[] */
     private array $routes = [];
 
-    public function __construct()
+    public function __construct(
+        private readonly ZweistConfiguration $zweistConfiguration
+    )
     {
         parent::__construct([], new Context());
     }
 
-    #[\Override]
+    #[Override]
     public function addAnnotation(object $annotation, Context $context): void
     {
         if ($annotation instanceof Operation) {
-
             /** @var class-string $controllerClass */
             $controllerClass = sprintf(
                 '%s\%s',
@@ -64,6 +67,10 @@ class OpenApiAnalyser extends Analysis
                 'controller_method' => $method,
                 'middleware' => $middleware,
             ];
+
+            foreach ($this->zweistConfiguration->inspectors as $inspector) {
+                $inspector->inspect($controllerClass, $method, $annotation);
+            }
         }
 
         parent::addAnnotation($annotation, $context);

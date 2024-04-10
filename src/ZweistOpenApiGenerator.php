@@ -31,7 +31,7 @@ class ZweistOpenApiGenerator
      */
     public function generate(): void
     {
-        $openApiAnalyser = new OpenApiAnalyser();
+        $openApiAnalyser = new OpenApiAnalyser($this->zweistConfiguration);
 
         $openApi = Generator::scan(
             $this->zweistConfiguration->openApiDefinitionPaths,

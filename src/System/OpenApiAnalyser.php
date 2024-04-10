@@ -6,10 +6,10 @@ namespace Zrnik\Zweist\System;
 
 use JsonException;
 use OpenApi\Analysis;
+use OpenApi\Annotations\AbstractAnnotation;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes\Middleware;
 use OpenApi\Context;
-use Override;
 use Zrnik\AttributeReflection\AttributeReflection;
 use Zrnik\Zweist\ZweistConfiguration;
 use Zrnik\Zweist\ZweistRouteService;
@@ -29,24 +29,23 @@ class OpenApiAnalyser extends Analysis
         parent::__construct([], new Context());
     }
 
-    #[Override]
     public function addAnnotation(object $annotation, Context $context): void
     {
+        /** @var class-string $class */
+        $class = sprintf(
+            '%s\%s',
+            $context->namespace,
+            $context->class
+        );
+
+        $method = (string) $context->method;
+
         if ($annotation instanceof Operation) {
-            /** @var class-string $controllerClass */
-            $controllerClass = sprintf(
-                '%s\%s',
-                $context->namespace,
-                $context->class
-            );
-
-            $method = (string) $context->method;
-
             $middleware = [];
 
             /** @var Middleware $middlewareAttribute */
             foreach (
-                AttributeReflection::getMethodAttributes(Middleware::class, $controllerClass, $method)
+                AttributeReflection::getMethodAttributes(Middleware::class, $class, $method)
                 as $middlewareAttribute
             ) {
                 $middleware[] = $middlewareAttribute->middlewareClass;
@@ -54,7 +53,7 @@ class OpenApiAnalyser extends Analysis
 
             /** @var Middleware $middlewareAttribute */
             foreach (
-                AttributeReflection::getClassAttributes(Middleware::class, $controllerClass)
+                AttributeReflection::getClassAttributes(Middleware::class, $class)
                 as $middlewareAttribute
             ) {
                 $middleware[] = $middlewareAttribute->middlewareClass;
@@ -63,13 +62,15 @@ class OpenApiAnalyser extends Analysis
             $this->routes[] = [
                 'http_method' => $annotation->method,
                 'url' => $annotation->path,
-                'controller_class' => $controllerClass,
+                'controller_class' => $class,
                 'controller_method' => $method,
                 'middleware' => $middleware,
             ];
+        }
 
-            foreach ($this->zweistConfiguration->inspectors as $inspector) {
-                $inspector->inspect($controllerClass, $method, $annotation);
+        foreach ($this->zweistConfiguration->inspectors as $inspector) {
+            if ($annotation instanceof AbstractAnnotation) {
+                $inspector->inspect($class, $method, $annotation);
             }
         }
 

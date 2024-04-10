@@ -59,7 +59,7 @@ class MiddlewareAttributeTest extends TestCase
         self::assertFileDoesNotExist($this->zweistConfiguration->openApiJsonPath);
         self::assertFileDoesNotExist($this->zweistConfiguration->routerJsonPath);
 
-        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration, $this->container);
+        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration);
 
         $zweistOpenApiGenerator->generate();
 

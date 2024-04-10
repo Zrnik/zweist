@@ -4,57 +4,96 @@ declare(strict_types=1);
 
 namespace Zrnik\Zweist;
 
-use JsonException;
+use OpenApi\Analysis;
 use OpenApi\Annotations\OpenApi;
+use OpenApi\Annotations\Operation;
+use OpenApi\Attributes\Middleware;
+use OpenApi\Context;
 use OpenApi\Generator;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use OpenApi\Processors\ProcessorInterface;
 use Psr\Log\LoggerInterface;
-use UnexpectedValueException;
-use Zrnik\Zweist\System\OpenApiAnalyser;
+use Zrnik\AttributeReflection\AttributeReflection;
 
-class ZweistOpenApiGenerator
+class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
 {
     public function __construct(
         private readonly ZweistConfiguration $zweistConfiguration,
-        private readonly ContainerInterface $container,
+        ?LoggerInterface $logger = null,
     )
     {
+        parent::__construct($logger);
+        $this->setVersion(OpenApi::VERSION_3_0_0);
+        $this->addProcessor($this);
     }
 
-    /**
-     * @return void
-     * @throws JsonException
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function generate(): void
+    // @phpstan-ignore-next-line
+    public function generate(?iterable $sources = null, ?Analysis $analysis = null, bool $validate = true): OpenApi
     {
-        $openApiAnalyser = new OpenApiAnalyser($this->zweistConfiguration);
+        if ($sources === null) {
+            $sources = $this->zweistConfiguration->openApiDefinitionPaths;
+        }
 
-        $openApi = Generator::scan(
-            $this->zweistConfiguration->openApiDefinitionPaths,
-            [
-                'analysis' => $openApiAnalyser,
-                'logger' => $this->container->get(LoggerInterface::class),
-            ],
-        );
+        $openApi = parent::generate($sources);
 
-        if (! $openApi instanceof OpenApi) { //@codeCoverageIgnoreStart
-            throw new UnexpectedValueException(
-                'Unable to generate OpenAPI!'
-            );
-        } //@codeCoverageIgnoreEnd
+        assert($openApi instanceof OpenApi);
 
         file_put_contents(
             $this->zweistConfiguration->openApiJsonPath,
             $openApi->toJson()
         );
 
+        return $openApi;
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function __invoke(Analysis $analysis): void
+    {
+
+        $routes = [];
+
+        foreach ($analysis->annotations as $annotation) {
+
+            if ($annotation instanceof Operation) {
+                assert($annotation->_context instanceof Context);
+
+                /** @var class-string $class */
+                $class = sprintf('%s\%s', $annotation->_context->namespace, $annotation->_context->class);
+
+                $method = (string) $annotation->_context->method;
+
+                $middleware = [];
+
+                /** @var Middleware $middlewareAttribute */
+                foreach (
+                    AttributeReflection::getMethodAttributes(Middleware::class, $class, $method)
+                    as $middlewareAttribute
+                ) {
+                    $middleware[] = $middlewareAttribute->middlewareClass;
+                }
+
+                /** @var Middleware $middlewareAttribute */
+                foreach (
+                    AttributeReflection::getClassAttributes(Middleware::class, $class)
+                    as $middlewareAttribute
+                ) {
+                    $middleware[] = $middlewareAttribute->middlewareClass;
+                }
+
+                $routes[] = [
+                    'http_method' => $annotation->method,
+                    'url' => $annotation->path,
+                    'controller_class' => $class,
+                    'controller_method' => $method,
+                    'middleware' => $middleware,
+                ];
+            }
+        }
+
         file_put_contents(
             $this->zweistConfiguration->routerJsonPath,
-            $openApiAnalyser->toJson()
+            json_encode($routes, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)
         );
     }
 }

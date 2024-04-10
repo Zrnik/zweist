@@ -73,7 +73,7 @@ class ZweistTest extends TestCase
         self::assertFileDoesNotExist($this->zweistConfiguration->openApiJsonPath);
         self::assertFileDoesNotExist($this->zweistConfiguration->routerJsonPath);
 
-        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration, $this->container);
+        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration);
 
         $zweistOpenApiGenerator->generate();
 
@@ -160,7 +160,7 @@ class ZweistTest extends TestCase
             $this->zweistConfiguration->routerJsonPath . '.invalid',
         );
 
-        $zg = new ZweistOpenApiGenerator($zweistConfiguration, $this->container);
+        $zg = new ZweistOpenApiGenerator($zweistConfiguration);
 
         /** @var InvalidArgumentException $invalidArgumentException */
         $invalidArgumentException = $this->assertExceptionThrown(
@@ -185,7 +185,7 @@ class ZweistTest extends TestCase
     public function testScalarPagination(): void
     {
         $app = new App($this->psr17Factory);
-        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration, $this->container);
+        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration);
         $zweistOpenApiGenerator->generate();
         $zweistRouteService = new ZweistRouteService($this->zweistConfiguration, $this->container);
         $zweistRouteService->applyRoutes($app);
@@ -262,7 +262,7 @@ class ZweistTest extends TestCase
     public function testObjectPagination(): void
     {
         $app = new App($this->psr17Factory);
-        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration, $this->container);
+        $zweistOpenApiGenerator = new ZweistOpenApiGenerator($this->zweistConfiguration);
         $zweistOpenApiGenerator->generate();
         $zweistRouteService = new ZweistRouteService($this->zweistConfiguration, $this->container);
         $zweistRouteService->applyRoutes($app);

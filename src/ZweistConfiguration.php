@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Zrnik\Zweist;
 
 use Zrnik\Zweist\Exception\MisconfiguredOpenApiGeneratorException;
-use Zrnik\Zweist\System\OpenApiInspector;
 
 class ZweistConfiguration
 {
@@ -16,13 +15,11 @@ class ZweistConfiguration
 
     /**
      * @param string[] $openApiDefinitionPaths
-     * @param OpenApiInspector[] $inspectors
      */
     public function __construct(
         array $openApiDefinitionPaths,
         public readonly string $openApiJsonPath,
         public readonly string $routerJsonPath,
-        public readonly array $inspectors = [],
     )
     {
         if (count($openApiDefinitionPaths) === 0) {

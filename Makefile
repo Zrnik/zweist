@@ -11,7 +11,7 @@ composer-update:
 	docker run -w /app -v $(shell pwd):/app zweist_image composer update
 
 phpunit:
-	docker run -w /app -v $(shell pwd):/app zweist_image vendor/bin/phpunit --filter ZweistTest
+	docker run -w /app -v $(shell pwd):/app zweist_image vendor/bin/phpunit
 
 coverage:
 	docker run -w /app -v $(shell pwd):/app zweist_image vendor/bin/phpunit --coverage-html temp/coverage

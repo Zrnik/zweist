@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Zrnik\Zweist\Content;
 
+use EventSauce\ObjectHydrator\DefinitionProvider;
+use EventSauce\ObjectHydrator\KeyFormatterWithoutConversion;
 use EventSauce\ObjectHydrator\ObjectMapperUsingReflection;
 use EventSauce\ObjectHydrator\UnableToHydrateObject;
 use JsonException;
@@ -30,25 +32,50 @@ class JsonContentFacade
     /**
      * @template T of object
      * @param RequestInterface $request
-     * @param class-string<T> $requestSchema
+     * @param class-string<T> $className
      * @return T
      * @throws JsonContentException
+     * @noinspection PhpDocSignatureInspection
      */
     public function parseRequest(
         RequestInterface $request,
-        string $requestSchema,
-    ): mixed
+        string $className,
+    ): object
     {
         try {
-            /** @var T */
-            return (new ObjectMapperUsingReflection())->hydrateObject(
-                $requestSchema,
+            return $this->hydrateObject(
+                $className,
                 json_decode(
                     (string) $request->getBody(),
                     true,
                     512,
                     JSON_THROW_ON_ERROR
                 ),
+            );
+        } catch (JsonException $jsonException) {
+            throw JsonRequestException::fromJsonException($jsonException);
+        }
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $className
+     * @param array<mixed> $data
+     * @return T
+     * @noinspection PhpPluralMixedCanBeReplacedWithArrayInspection
+     * @noinspection PhpDocSignatureInspection
+     */
+    public function hydrateObject(string $className, array $data): object
+    {
+        try {
+            /** @var T */
+            return (new ObjectMapperUsingReflection(
+                new DefinitionProvider(
+                    keyFormatter: new KeyFormatterWithoutConversion(),
+                ),
+            ))->hydrateObject(
+                $className,
+                $data,
             );
         } catch (UnableToHydrateObject $unableToHydrateObject) {
 
@@ -65,8 +92,6 @@ class JsonContentFacade
             }
 
             throw JsonRequestException::unhandledObjectHydrate($unableToHydrateObject); // @codeCoverageIgnore
-        } catch (JsonException $jsonException) {
-            throw JsonRequestException::fromJsonException($jsonException);
         } catch (Throwable $throwable) { // @codeCoverageIgnoreStart
             throw JsonRequestException::unhandledThrowable($throwable);
         } // @codeCoverageIgnoreEnd

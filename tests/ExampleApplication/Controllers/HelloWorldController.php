@@ -45,6 +45,9 @@ class HelloWorldController
             content: new JsonContent(ref: TestResponse::class)
         ),
         Middleware(ExampleMiddleware::class),
+        Middleware(ExampleMiddleware::class, [
+            'context' => 'value',
+        ]),
     ]
     public function sayHello(
         RequestInterface $request,

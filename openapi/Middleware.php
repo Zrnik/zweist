@@ -14,7 +14,8 @@ class Middleware
      * @param class-string<MiddlewareInterface> $middlewareClass
      */
     public function __construct(
-        public readonly string $middlewareClass
+        public readonly string $middlewareClass,
+        public readonly mixed $context = null,
     )
     {
     }

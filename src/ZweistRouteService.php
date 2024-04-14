@@ -12,6 +12,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use RuntimeException;
 use Slim\Routing\Route;
 use Slim\Routing\RouteCollectorProxy;
+use Zrnik\Zweist\Content\MiddlewareWithContextInterface;
 
 /**
  * @phpstan-type SlimRouteDataArrayShape array{
@@ -19,7 +20,7 @@ use Slim\Routing\RouteCollectorProxy;
  *     url: string,
  *     controller_class: string,
  *     controller_method: string,
- *     middleware: string[],
+ *     middleware: array{class: class-string<MiddlewareInterface>, context: mixed}
  * }
  */
 class ZweistRouteService
@@ -62,10 +63,16 @@ class ZweistRouteService
                 [$routeSettings['controller_class'], $routeSettings['controller_method']]
             );
 
-            /** @var class-string<MiddlewareInterface> $middlewareClass */
-            foreach ($routeSettings['middleware'] as $middlewareClass) {
+            /**
+             * @var array{class: class-string<MiddlewareInterface>, context: mixed} $middlewareData
+             */
+            foreach ($routeSettings['middleware'] as $middlewareData) {
                 /** @var MiddlewareInterface $middleware */
-                $middleware = $this->container->get($middlewareClass);
+                $middleware = $this->container->get($middlewareData['class']);
+
+                if ($middleware instanceof MiddlewareWithContextInterface) {
+                    $middleware->setContext($middlewareData['context']);
+                }
 
                 $route->addMiddleware($middleware);
             }

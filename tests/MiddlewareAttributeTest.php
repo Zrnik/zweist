@@ -80,8 +80,10 @@ class MiddlewareAttributeTest extends TestCase
             )
         );
 
-        $headerValues = $response->getHeader(ExampleMiddleware::HEADER_NAME);
+        $valueHeaderValues = $response->getHeader(ExampleMiddleware::VALUE_HEADER_NAME);
+        self::assertContains(ExampleMiddleware::VALUE_HEADER_VALUE, $valueHeaderValues);
 
-        self::assertContains(ExampleMiddleware::HEADER_VALUE, $headerValues);
+        $contextHeaderValues = $response->getHeader(ExampleMiddleware::CONTEXT_HEADER_NAME);
+        self::assertContains('value', $contextHeaderValues);
     }
 }

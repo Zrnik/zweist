@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zrnik\Zweist;
 
+use JsonException;
 use OpenApi\Analysis;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Annotations\Operation;
@@ -46,11 +47,10 @@ class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function __invoke(Analysis $analysis): void
     {
-
         $routes = [];
 
         foreach ($analysis->annotations as $annotation) {
@@ -63,14 +63,17 @@ class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
 
                 $method = (string) $annotation->_context->method;
 
-                $middleware = [];
+                $middlewareData = [];
 
                 /** @var Middleware $middlewareAttribute */
                 foreach (
                     AttributeReflection::getMethodAttributes(Middleware::class, $class, $method)
                     as $middlewareAttribute
                 ) {
-                    $middleware[] = $middlewareAttribute->middlewareClass;
+                    $middlewareData[] = [
+                        'class' => $middlewareAttribute->middlewareClass,
+                        'context' => $middlewareAttribute->context,
+                    ];
                 }
 
                 /** @var Middleware $middlewareAttribute */
@@ -78,7 +81,10 @@ class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
                     AttributeReflection::getClassAttributes(Middleware::class, $class)
                     as $middlewareAttribute
                 ) {
-                    $middleware[] = $middlewareAttribute->middlewareClass;
+                    $middlewareData[] = [
+                        'class' => $middlewareAttribute->middlewareClass,
+                        'context' => $middlewareAttribute->context,
+                    ];
                 }
 
                 $routes[] = [
@@ -86,7 +92,7 @@ class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
                     'url' => $annotation->path,
                     'controller_class' => $class,
                     'controller_method' => $method,
-                    'middleware' => $middleware,
+                    'middleware' => $middlewareData,
                 ];
             }
         }

@@ -8,6 +8,7 @@ use JsonException;
 use JsonSerializable;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use OpenApi\Context;
 use OpenApi\Generator;
 use PHPUnit\Framework\ExpectationFailedException;
 use ReflectionClass;
@@ -167,6 +168,7 @@ trait OpenApiSchemaCheck
 
     public function assertIsSchemaObject(object $schemaObject, ?string $message = null): void
     {
+        Generator::$context ??= new Context();
         $schemaAttributes = AttributeReflection::getClassAttributes(Schema::class, $schemaObject);
         $this->addToAssertionCount(1);
 
@@ -186,6 +188,7 @@ trait OpenApiSchemaCheck
 
     public function getPropertyAttribute(object $schemaObject, ReflectionProperty $reflectionProperty): Property
     {
+        Generator::$context ??= new Context();
         $propertyAttributes = AttributeReflection::getPropertyAttributes(
             Property::class,
             $schemaObject,
@@ -201,6 +204,7 @@ trait OpenApiSchemaCheck
 
     private function isSchemaProperty(object $schemaObject, ReflectionProperty $reflectionProperty): bool
     {
+        Generator::$context ??= new Context();
         $propertyAttributes = AttributeReflection::getPropertyAttributes(
             Property::class,
             $schemaObject,
@@ -212,6 +216,7 @@ trait OpenApiSchemaCheck
 
     private function isSchemaClass(object $schemaObject): bool
     {
+        Generator::$context ??= new Context();
         $classAttributes = AttributeReflection::getClassAttributes(
             Schema::class,
             $schemaObject,

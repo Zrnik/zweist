@@ -25,6 +25,7 @@ class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
         parent::__construct($logger);
         $this->setVersion(OpenApi::VERSION_3_0_0);
         $this->addProcessor($this);
+        Generator::$context ??= new Context();
     }
 
     // @phpstan-ignore-next-line

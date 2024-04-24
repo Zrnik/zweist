@@ -9,6 +9,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Zrnik\Zweist\Content\MiddlewareWithContextInterface;
+use Zrnik\Zweist\Tests\ExampleSchema\NotASchemaClass;
+use Zrnik\Zweist\Tests\ExampleSchema\SchemaClass;
 
 class ExampleMiddleware implements MiddlewareInterface, MiddlewareWithContextInterface
 {
@@ -20,6 +22,11 @@ class ExampleMiddleware implements MiddlewareInterface, MiddlewareWithContextInt
 
     private mixed $context;
 
+    // @phpstan-ignore-next-line
+    public function __construct(NotASchemaClass $notASchemaClass, SchemaClass|NotASchemaClass $something)
+    {
+    }
+
     public function setContext(mixed $context): void
     {
         $this->context = $context;
@@ -30,14 +37,20 @@ class ExampleMiddleware implements MiddlewareInterface, MiddlewareWithContextInt
         RequestHandlerInterface $handler
     ): ResponseInterface
     {
-        return $handler
-            ->handle($request)
-            ->withHeader(
-                self::VALUE_HEADER_NAME,
-                self::VALUE_HEADER_VALUE
-            )->withHeader(
+        $response = $handler->handle($request);
+
+        $response = $response->withHeader(
+            self::VALUE_HEADER_NAME,
+            self::VALUE_HEADER_VALUE
+        );
+
+        if ($this->context !== null) {
+            $response = $response->withHeader(
                 self::CONTEXT_HEADER_NAME,
                 $this->context,
             );
+        }
+
+        return $response;
     }
 }

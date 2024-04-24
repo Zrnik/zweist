@@ -9,6 +9,10 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionNamedType;
+use ReflectionUnionType;
 use RuntimeException;
 use Slim\Routing\Route;
 use Slim\Routing\RouteCollectorProxy;
@@ -38,6 +42,7 @@ class ZweistRouteService
      * @throws JsonException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
     public function applyRoutes(RouteCollectorProxy $routeCollectorProxy): void
     {
@@ -67,14 +72,54 @@ class ZweistRouteService
              * @var array{class: class-string<MiddlewareInterface>, context: mixed} $middlewareData
              */
             foreach ($routeSettings['middleware'] as $middlewareData) {
-                /** @var MiddlewareInterface $middleware */
-                $middleware = $this->container->get($middlewareData['class']);
+
+                $reflectionClass = new ReflectionClass($middlewareData['class']);
+                $reflectionMethod = $reflectionClass->getConstructor();
+
+                $middleware = null;
+
+                if ($reflectionMethod !== null) {
+                    $parameterValues = [];
+
+                    foreach ($reflectionMethod->getParameters() as $parameter) {
+                        $parameterType = $parameter->getType();
+                        $parameterValue = null;
+
+                        if ($parameterType instanceof ReflectionUnionType) {
+                            foreach ($parameterType->getTypes() as $type) {
+                                if (($type instanceof ReflectionNamedType) && $parameterValue === null) {
+                                    try {
+                                        $parameterValue = $this->container->get($type->getName());
+                                    } catch (ContainerExceptionInterface) { // @codeCoverageIgnoreStart
+                                        /*noop*/
+                                    } // @codeCoverageIgnoreEnd
+                                }
+                            }
+                        }
+
+                        if (($parameterType instanceof ReflectionNamedType) && ($parameterValue === null)) {
+                            try {
+                                $parameterValue = $this->container->get($parameterType->getName());
+                            } catch (ContainerExceptionInterface) { // @codeCoverageIgnoreStart
+                                /*noop*/
+                            } // @codeCoverageIgnoreEnd
+                        }
+
+                        $parameterValues[$parameter->getName()] = $parameterValue;
+                    }
+
+                    $middleware = new $middlewareData['class'](...$parameterValues);
+                } else {
+                    $middleware = new $middlewareData['class']();
+                }
 
                 if ($middleware instanceof MiddlewareWithContextInterface) {
                     $middleware->setContext($middlewareData['context']);
                 }
 
-                $route->addMiddleware($middleware);
+                if ($middleware instanceof MiddlewareInterface) {
+                    $route->addMiddleware($middleware);
+                }
             }
         }
     }

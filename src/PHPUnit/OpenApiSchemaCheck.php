@@ -92,17 +92,26 @@ trait OpenApiSchemaCheck
                      */
                     foreach ($reflectionTypeContainer->getTypes() as $reflectionNamedType) {
                         $types[] = $reflectionNamedType->getName();
+                        if($reflectionNamedType->allowsNull()) {
+                            $types[] = 'null';
+                        }
                     }
                 }
 
                 if ($reflectionTypeContainer instanceof ReflectionNamedType) {
                     $types[] = $reflectionTypeContainer->getName();
+                    if($reflectionTypeContainer->allowsNull()) {
+                        $types[] = 'null';
+                    }
                 }
 
                 if ($reflectionTypeContainer instanceof ReflectionIntersectionType) {
                     /** @var ReflectionNamedType $reflectionNamedType */
                     foreach ($reflectionTypeContainer->getTypes() as $reflectionNamedType) {
                         $types[] = $reflectionNamedType->getName();
+                        if($reflectionNamedType->allowsNull()) {
+                            $types[] = 'null';
+                        }
                     }
 
                     $mustBeAllAtOnce = true;

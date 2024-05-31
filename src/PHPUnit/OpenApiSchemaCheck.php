@@ -72,12 +72,19 @@ trait OpenApiSchemaCheck
 
                 /** @var string|class-string $forcedType */
                 foreach ($forcedTypes as $forcedType) {
+                    /** @noinspection NotOptimalIfConditionsInspection */
+                    /** @noinspection PhpParamsInspection */
                     if ($this->objectExists($forcedType) && ($value instanceof $forcedType) && $this->isSchemaClass($value)) {
+                        /** @noinspection PhpParamsInspection */
                         $this->assertSchemaReturnsCorrectJson($value);
                         continue 2;
                     }
 
                     $types[] = $forcedType;
+                }
+
+                if($schemaAttribute->nullable === true) {
+                    $types[] = 'null';
                 }
             }
 
@@ -92,7 +99,7 @@ trait OpenApiSchemaCheck
                      */
                     foreach ($reflectionTypeContainer->getTypes() as $reflectionNamedType) {
                         $types[] = $reflectionNamedType->getName();
-                        if($reflectionNamedType->allowsNull()) {
+                        if ($reflectionNamedType->allowsNull()) {
                             $types[] = 'null';
                         }
                     }
@@ -100,7 +107,7 @@ trait OpenApiSchemaCheck
 
                 if ($reflectionTypeContainer instanceof ReflectionNamedType) {
                     $types[] = $reflectionTypeContainer->getName();
-                    if($reflectionTypeContainer->allowsNull()) {
+                    if ($reflectionTypeContainer->allowsNull()) {
                         $types[] = 'null';
                     }
                 }
@@ -109,7 +116,7 @@ trait OpenApiSchemaCheck
                     /** @var ReflectionNamedType $reflectionNamedType */
                     foreach ($reflectionTypeContainer->getTypes() as $reflectionNamedType) {
                         $types[] = $reflectionNamedType->getName();
-                        if($reflectionNamedType->allowsNull()) {
+                        if ($reflectionNamedType->allowsNull()) {
                             $types[] = 'null';
                         }
                     }

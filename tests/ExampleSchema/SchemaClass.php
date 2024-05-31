@@ -23,6 +23,8 @@ class SchemaClass implements JsonSerializable
         public readonly ?string $nullableText = 'nullable-text',
         #[Property(nullable: true)]
         public readonly ?string $nullableTextIsNull = null,
+        #[Property(type: 'string', nullable: true)]
+        public readonly ?string $nullableWithForcedTypeTextIsNull = null,
         #[Property]
         public readonly RuntimeException|LogicException|MisconfiguredOpenApiGeneratorException $unionExceptionProperty = new RuntimeException(),
         #[Property(type: UnrelatedSchemaClass::class)]
@@ -48,6 +50,7 @@ class SchemaClass implements JsonSerializable
             'text' => $this->text,
             'nullableText' => $this->nullableText,
             'nullableTextIsNull' => $this->nullableTextIsNull,
+            'nullableWithForcedTypeTextIsNull' => $this->nullableWithForcedTypeTextIsNull,
             'unionExceptionProperty' => $this->unionExceptionProperty,
             'unrelatedSchema' => new UnrelatedSchemaClass(),
             'unrelatedNonSchemaClass' => new NotASchemaClass(),

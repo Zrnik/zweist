@@ -39,6 +39,23 @@ class ZweistOpenApiGenerator extends Generator implements ProcessorInterface
 
         assert($openApi instanceof OpenApi);
 
+        foreach ($openApi->paths as $idx => $path) {
+            $stringPath = str_replace('\\', '/', $path->path);
+            $pathParts = explode('/', $stringPath);
+
+            foreach ($pathParts as $pathPartIndex => $pathPart) {
+                if (
+                    str_starts_with($pathPart, '{')
+                    && str_ends_with($pathPart, '}')
+                    && str_contains($pathPart, ':')
+                ) {
+                    $pathParts[$pathPartIndex] = explode(':', $pathPart)[0] . '}';
+                }
+            }
+
+            $openApi->paths[$idx]->path = implode('/', $pathParts);
+        }
+
         file_put_contents(
             $this->zweistConfiguration->openApiJsonPath,
             $openApi->toJson()

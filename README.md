@@ -29,7 +29,7 @@ class HelloWorldController
      */
     #[
         Get(
-            path: '/api/hello/{name}',
+            path: '/api/hello/{name:.*}',
             operationId: 'Say Hello',
             description: 'says hello by the request parameter',
         ),

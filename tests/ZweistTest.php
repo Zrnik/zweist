@@ -7,12 +7,14 @@ namespace Zrnik\Zweist\Tests;
 use DI\Container;
 use InvalidArgumentException;
 use JsonException;
+use Nette\Utils\Json;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
+use ReflectionException;
 use RuntimeException;
 use Slim\App;
 use Zrnik\PHPUnit\Exceptions;
@@ -59,6 +61,7 @@ class ZweistTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws JsonException
      * @throws NotFoundExceptionInterface
+     * @throws ReflectionException
      */
     public function testRouter(): void
     {
@@ -80,6 +83,16 @@ class ZweistTest extends TestCase
         self::assertFileExists($this->zweistConfiguration->openApiJsonPath);
         self::assertFileExists($this->zweistConfiguration->routerJsonPath);
 
+        $forbiddenInOpenApiJson = ':.*}';
+        $jsonValue = file_get_contents($this->zweistConfiguration->openApiJsonPath);
+
+        $this->assertNotFalse($jsonValue);
+
+        $this->assertFalse(
+            str_contains($jsonValue, $forbiddenInOpenApiJson),
+            'The generator must replace ":.*" from the url arguments for the openapi specification file.'
+        );
+
         $app = new App($this->psr17Factory);
 
         $zweistRouteService = new ZweistRouteService(
@@ -88,7 +101,7 @@ class ZweistTest extends TestCase
         );
         $zweistRouteService->applyRoutes($app);
 
-        foreach (['John', 'Doe'] as $name) {
+        foreach (['John', 'Doe', 'NameWith/Slash'] as $name) {
             $response = $app->handle(
                 $this->psr17Factory->createServerRequest(
                     'GET',
@@ -96,9 +109,11 @@ class ZweistTest extends TestCase
                 )
             );
 
+            $body = Json::decode((string) $response->getBody(), forceArrays: true);
+
             self::assertSame(
-                sprintf('{"message":"Hello, %s :)"}', $name),
-                (string) $response->getBody(),
+                sprintf('Hello, %s :)', $name),
+                $body['message'],
             );
         }
 
@@ -125,9 +140,11 @@ class ZweistTest extends TestCase
                 )
             );
 
+            $body = Json::decode((string) $response->getBody(), forceArrays: true);
+
             self::assertSame(
-                sprintf('{"message":"%s, %s :("}', $style, $name),
-                (string) $response->getBody(),
+                sprintf('%s, %s :(', $style, $name),
+                $body['message']
             );
         }
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zrnik\Zweist\Tests\ExampleApplication\Controllers;
 
-use JsonException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
@@ -31,11 +30,10 @@ class HelloWorldController
 
     /**
      * @param array<string, string> $arguments
-     * @throws JsonException
      */
     #[
         Get(
-            path: '/api/hello/{name}',
+            path: '/api/hello/{name:.*}',
             operationId: 'Say Hello',
             description: 'says hello by the request parameter',
         ),
